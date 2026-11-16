@@ -13,9 +13,11 @@ const galaxies = buildGalaxy(models);
 const rings = buildFunctionGalaxy(models);
 
 test('extracted configuration preserves every coordinate and visual attribute', () => {
-  const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-  assert.equal(digest(galaxies), 'adbe03b42da54f76b14bf20869ff510be66da536a9f2daa14f18db4ef5e40f1e');
-  assert.equal(digest(rings), 'd761c4bf5dc88e204e4f7424d1f8efe28707cba8477628026ff4b1a080981cc8');
+  // Keep six decimals so platform-specific trigonometric rounding does not fail CI.
+  const digest = value => createHash('sha256').update(JSON.stringify(value,
+    (_, item) => typeof item === 'number' ? Number(item.toFixed(6)) : item)).digest('hex');
+  assert.equal(digest(galaxies), '962a74c96710b46d0574dac8605353e62bbe770f5607bcb4539f3866951bd6ba');
+  assert.equal(digest(rings), '6e394d1e903d0075fd302aad4790a5f319b49d70f77e0903d7239b130aec8236');
 });
 
 test('classification and validation share one configuration without ambiguous labels', () => {
