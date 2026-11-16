@@ -105,29 +105,6 @@ const models = parseModels(yourJsonData);
 
 更多说明见 [实现原理](docs/ARCHITECTURE.md)。
 
-## 上传 GitHub 与发布演示
-
-创建一个空仓库，例如 `galaxy-ui`。在本项目根目录执行以下命令，将占位地址替换成你自己的仓库地址：
-
-```bash
-git init
-git add .
-git commit -m "Initial galaxy UI demo"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/galaxy-ui.git
-git push -u origin main
-```
-
-`.gitignore` 已排除依赖目录、构建文件和本地配置。上传后，`Check` 工作流会运行测试和构建。
-
-发布在线演示：
-
-1. 打开仓库的 **Settings → Pages**，选择 **GitHub Actions** 作为来源。
-2. 在 **Actions** 中找到 **Deploy GitHub Pages**，点击 **Run workflow**。
-3. 部署结束后，从工作流的 `github-pages` 环境打开演示地址。
-
-项目使用相对资源路径，适用于 GitHub Pages 仓库子路径。演示部署采用手动触发；更新代码后再次运行部署工作流。
-
 ## 许可
 
 [MIT](LICENSE)。可以修改、复用和商用，请保留版权与许可声明。依赖及来源说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
