@@ -43,6 +43,15 @@ npm run build    # 严格 TypeScript 检查并生成 dist/
 npm run preview  # 预览构建结果
 ```
 
+浏览器回归测试（首次运行需安装 Chromium）：
+
+```bash
+npx playwright install chromium
+npm run test:browser
+```
+
+`models` 数组引用变化时，组件清空选择、分组筛选和搜索，向 `onSelectionChange` 发送 `null`，并保留当前星系／星环模式及动效设置。
+
 页面通过 HTTP 读取 JSON，请通过上述命令访问，不要直接双击 `index.html`。
 
 ## 替换数据
@@ -77,7 +86,7 @@ npm run preview  # 预览构建结果
 
 功能映射：模拟 → 过程模拟；计算 → 数值计算；预测 → 预测预报；评估 → 评价评估；分类和制图 → 分析制图；优化 → 优化决策；其他标签 → 待标注。
 
-增减记录即可改变星点数量。要使用自己的分类名称，同时修改 `src/galaxy-layout.ts` 中的布局锚点和 `src/data/models.ts` 中的领域校验列表。当前空间位置用于浏览布局，距离不表示数据相似度；示例中的年份和审核标记也是合成数据。
+增减记录即可改变星点数量。要使用自己的分类名称，修改 `src/galaxy-config.ts` 中的类别名称、任务标签和布局参数，数据校验与布局会共同读取这份配置。当前空间位置用于浏览布局，距离不表示数据相似度；示例中的年份和审核标记也是合成数据。
 
 ## 在 React 项目中复用
 
@@ -104,6 +113,7 @@ const models = parseModels(yourJsonData);
 | 文件 | 职责 |
 | --- | --- |
 | `src/Galaxy.tsx` | React 状态、切换按钮、搜索和详情 |
+| `src/galaxy-config.ts` | 领域、功能类别及其布局参数的统一配置 |
 | `src/galaxy-layout.ts` | 固定领域锚点、确定性螺旋布局、功能星环 |
 | `src/galaxy-renderer.ts` | Canvas 绘制、深度排序、拾取及指针交互 |
 | `src/galaxy-camera.ts` | 三维透视投影、旋转、平移与缩放 |

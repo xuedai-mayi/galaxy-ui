@@ -1,3 +1,4 @@
+import { DOMAIN_ANCHORS, DOMAIN_NAMES, FUNCTION_ANCHORS, UNCLASSIFIED_FUNCTION, functionGroup } from './galaxy-config';
 import type { Point3 } from './galaxy-camera';
 
 /**
@@ -43,40 +44,7 @@ export interface GalaxyLayout {
   extent: number;
 }
 
-interface DomainAnchor {
-  name: string;
-  x: number;
-  y: number;
-  z: number;
-  color: string;
-  tiltX: number;
-  tiltY: number;
-  rotation: number;
-  arms: number;
-  thickness: number;
-}
 
-// Fixed irregular centres, composed by seeded Poisson separation (seed 31033).
-// The current catalogue's projected envelopes are disjoint when viewed along Z.
-// Depth and independent disc orientations give rotation a genuine volume view.
-const ANCHORS: readonly DomainAnchor[] = [
-  { name: '生态/植被', x: -527, y: -43, z: 288, color: '#93c4b4', tiltX: 0.50, tiltY: -0.24, rotation: 0.63, arms: 3, thickness: 0.055 },
-  { name: '水文/洪水', x: 152, y: 164, z: -308, color: '#93bdd2', tiltX: -0.31, tiltY: 0.69, rotation: 2.13, arms: 4, thickness: 0.045 },
-  { name: '未标注', x: -204, y: 480, z: -366, color: '#a1b0b8', tiltX: 0.76, tiltY: 0.18, rotation: -1.07, arms: 2, thickness: 0.070 },
-  { name: '气候/气象', x: 639, y: 302, z: -176, color: '#b1b6d5', tiltX: -0.59, tiltY: -0.36, rotation: 1.08, arms: 3, thickness: 0.050 },
-  { name: '遥感/影像', x: 88, y: -387, z: 176, color: '#99bac8', tiltX: 0.24, tiltY: 0.44, rotation: -0.43, arms: 4, thickness: 0.060 },
-  { name: '地形/地貌', x: -597, y: 345, z: -122, color: '#c9c2a5', tiltX: 0.93, tiltY: -0.22, rotation: 2.84, arms: 2, thickness: 0.055 },
-  { name: '农业', x: 746, y: 33, z: -329, color: '#adbf9a', tiltX: -0.39, tiltY: 0.48, rotation: -2.32, arms: 3, thickness: 0.060 },
-  { name: '土壤/侵蚀', x: 701, y: -333, z: -232, color: '#c8b5a0', tiltX: 0.70, tiltY: -0.47, rotation: 0.34, arms: 2, thickness: 0.045 },
-  { name: '海洋/海岸', x: 501, y: -119, z: 67, color: '#89c5c7', tiltX: -0.80, tiltY: 0.21, rotation: 1.73, arms: 4, thickness: 0.055 },
-  { name: '社会经济', x: -39, y: -173, z: -164, color: '#b3aec4', tiltX: 0.28, tiltY: -0.65, rotation: -1.68, arms: 2, thickness: 0.075 },
-  { name: '其他', x: 331, y: 427, z: 292, color: '#a4b9ba', tiltX: 0.58, tiltY: 0.36, rotation: 2.37, arms: 3, thickness: 0.065 },
-  { name: '空气质量', x: -227, y: -420, z: 139, color: '#b7c1a8', tiltX: -0.48, tiltY: -0.27, rotation: -0.88, arms: 4, thickness: 0.050 },
-  { name: '城市', x: 390, y: -412, z: -261, color: '#a4bed5', tiltX: 0.88, tiltY: 0.32, rotation: 0.96, arms: 2, thickness: 0.060 },
-  { name: '土地利用', x: 261, y: -146, z: -294, color: '#9cbaab', tiltX: -0.26, tiltY: 0.57, rotation: -2.64, arms: 3, thickness: 0.055 },
-  { name: '地下水', x: -606, y: -365, z: -189, color: '#8dafc9', tiltX: -0.68, tiltY: -0.41, rotation: 1.43, arms: 4, thickness: 0.070 },
-];
-const DOMAIN_NAMES = new Set(ANCHORS.map(anchor => anchor.name));
 const TAU = 2 * Math.PI;
 
 export type GalaxyTaxonomy = 'domain' | 'function';
@@ -84,26 +52,8 @@ export type GalaxyTaxonomy = 'domain' | 'function';
 /** Existing catalogue task labels remain the source of functional membership. */
 export function galaxyGroup(model: GalaxyModel, taxonomy: GalaxyTaxonomy): string {
   if (taxonomy === 'domain') return model.domain;
-  switch (model.task) {
-    case '模拟': return '过程模拟';
-    case '计算': return '数值计算';
-    case '预测': return '预测预报';
-    case '评估': return '评价评估';
-    case '分类': case '制图': return '分析制图';
-    case '优化': return '优化决策';
-    default: return '待标注';
-  }
+  return functionGroup(model.task);
 }
-
-const FUNCTION_ANCHORS = [
-  { name: '过程模拟', radius: 405, halfWidth: 13, color: '#f2ce87', speed: 0.025, labelAngle: 0.32 },
-  { name: '数值计算', radius: 345, halfWidth: 11, color: '#c0dbe4', speed: -0.021, labelAngle: -0.25 },
-  { name: '预测预报', radius: 285, halfWidth: 8, color: '#cebef0', speed: 0.030, labelAngle: 0.90 },
-  { name: '评价评估', radius: 225, halfWidth: 9, color: '#efbb8b', speed: -0.026, labelAngle: 2.25 },
-  { name: '分析制图', radius: 165, halfWidth: 7, color: '#a7d6bf', speed: 0.037, labelAngle: 3.70 },
-  { name: '优化决策', radius: 105, halfWidth: 6, color: '#ffedb1', speed: -0.041, labelAngle: 2.55 },
-  { name: '待标注', radius: 475, halfWidth: 15, color: '#94a4b7', speed: 0.016, labelAngle: 3.55 },
-] as const;
 
 /** Coplanar concentric orbital bands. Each real model contributes exactly one point. */
 export function buildFunctionGalaxy(models: readonly GalaxyModel[]): GalaxyLayout {
@@ -140,7 +90,7 @@ export function buildFunctionGalaxy(models: readonly GalaxyModel[]): GalaxyLayou
         z: Math.sin(tubeAngle) * tube * 0.35,
         radius: 0.8 + unitRandom(model.id, 5) * 0.8,
         color: unitRandom(model.id, 24) < 0.12 ? '#fff0cf' : anchor.color,
-        opacity: (anchor.name === '待标注' ? 0.32 : 0.55) + unitRandom(model.id, 23) * 0.4,
+        opacity: (anchor.name === UNCLASSIFIED_FUNCTION ? 0.32 : 0.55) + unitRandom(model.id, 23) * 0.4,
         phase: unitRandom(model.id, 6) * TAU,
       });
     }
@@ -205,7 +155,7 @@ export function buildGalaxy(models: readonly GalaxyModel[]): GalaxyLayout {
   const stars: GalaxyStar[] = [];
   const clusters: GalaxyCluster[] = [];
   let extent = 0;
-  for (const anchor of ANCHORS) {
+  for (const anchor of DOMAIN_ANCHORS) {
     const group = groups.get(anchor.name);
     if (!group) continue;
     const radius = Math.min(190, Math.max(95, Math.sqrt(group.length) * 5.1));

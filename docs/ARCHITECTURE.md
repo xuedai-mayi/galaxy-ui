@@ -32,11 +32,11 @@ React 维护搜索词、选中记录、分组、分类方式、标签显示和�
 
 ## 调整入口
 
-- 星系中心、螺旋臂、倾角与星环半径：`galaxy-layout.ts`。
+- 类别、任务映射、星系中心、螺旋臂、倾角与星环参数：`galaxy-config.ts`。
 - 默认视角与相机约束：`galaxy-camera.ts`。
-- 旋转速度：`galaxy-motion.ts` 和布局中的 `ring.speed`。
+- 旋转速度：`galaxy-motion.ts` 和配置中的 `speed`。
 - 切换时长与轨迹：`galaxy-morph.ts`。
 - 星点与标记配色：`galaxy-theme.ts`；页面主题变量：`style.css`。
-- 数据字段和领域约束：`data/models.ts`。
+- 数据字段校验：`data/models.ts`；领域约束从 `galaxy-config.ts` 读取。
 
 当前示例以 6,895 条记录展示效果。更大数据量需要在目标设备上测量；绘制与拾取均在浏览器主线程执行。

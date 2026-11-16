@@ -27,6 +27,21 @@ export default function Galaxy({ models, onSelectionChange }: GalaxyProps): Reac
   const searchRef = useRef<HTMLDetailsElement>(null);
   const expandButtonRef = useRef<HTMLButtonElement>(null);
   const rendererRef = useRef<GalaxyRenderer | null>(null);
+  // Replacing a dataset starts a fresh selection/search session before effects run.
+  const [previousModels, setPreviousModels] = useState(models);
+  if (previousModels !== models) {
+    setPreviousModels(models);
+    setSelectedId(null);
+    setActiveGroup('');
+    setQuery('');
+  }
+  const notifiedModels = useRef(models);
+  useEffect(() => {
+    if (notifiedModels.current !== models) {
+      notifiedModels.current = models;
+      onSelectionChange?.(null);
+    }
+  }, [models, onSelectionChange]);
   const layouts = useMemo(() => ({ domain: buildGalaxy(models), function: buildFunctionGalaxy(models) }), [models]);
   const layout = layouts[taxonomy];
   const selected = models.find(model => model.id === selectedId);
@@ -78,7 +93,7 @@ export default function Galaxy({ models, onSelectionChange }: GalaxyProps): Reac
   }, [layouts, models.length]);
   useEffect(() => { rendererRef.current?.setLayout(layout, taxonomy); }, [layout, taxonomy]);
   useEffect(() => {
-    rendererRef.current?.setAppearance({ paused, labels, domain: activeGroup, matchIds, searching: !!query.trim(), selectedId: selectedId ?? '', recommendations: new Map() });
+    rendererRef.current?.setAppearance({ paused, labels, domain: activeGroup, matchIds, searching: !!query.trim(), selectedId: selectedId ?? '' });
   }, [layout, paused, labels, activeGroup, matchIds, query, selectedId]);
   useEffect(() => {
     const host = hostRef.current;

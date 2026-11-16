@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { createHash } from 'node:crypto';
+import { DOMAIN_ANCHORS, FUNCTION_ANCHORS, DOMAIN_NAMES } from '../src/galaxy-config.ts';
 import { parseModels } from '../src/data/models.ts';
 import { buildGalaxy, buildFunctionGalaxy, galaxyGroup } from '../src/galaxy-layout.ts';
 import { GalaxyMotion } from '../src/galaxy-motion.ts';
@@ -9,6 +11,26 @@ import { GalaxyMorph } from '../src/galaxy-morph.ts';
 const models = parseModels(JSON.parse(readFileSync(new URL('../public/models.json', import.meta.url), 'utf8')));
 const galaxies = buildGalaxy(models);
 const rings = buildFunctionGalaxy(models);
+
+test('extracted configuration preserves every coordinate and visual attribute', () => {
+  const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  assert.equal(digest(galaxies), 'adbe03b42da54f76b14bf20869ff510be66da536a9f2daa14f18db4ef5e40f1e');
+  assert.equal(digest(rings), 'd761c4bf5dc88e204e4f7424d1f8efe28707cba8477628026ff4b1a080981cc8');
+});
+
+test('classification and validation share one configuration without ambiguous labels', () => {
+  assert.equal(DOMAIN_NAMES.size, DOMAIN_ANCHORS.length);
+  assert.equal(new Set(FUNCTION_ANCHORS.map(group => group.name)).size, FUNCTION_ANCHORS.length);
+  const tasks = FUNCTION_ANCHORS.flatMap(group => group.tasks);
+  assert.equal(new Set(tasks).size, tasks.length);
+  assert.equal(FUNCTION_ANCHORS.filter(group => !group.tasks.length).length, 1);
+  for (const group of DOMAIN_ANCHORS) {
+    assert.equal(parseModels([{ ...models[0], domain: group.name }])[0].domain, group.name);
+  }
+  for (const group of FUNCTION_ANCHORS) {
+    for (const task of group.tasks) assert.equal(galaxyGroup({ ...models[0], task }, 'function'), group.name);
+  }
+});
 
 test('both layouts preserve each record exactly once, with finite coordinates', () => {
   for (const layout of [galaxies, rings]) {

@@ -19,7 +19,6 @@ interface Appearance {
   matchIds: ReadonlySet<string>;
   searching: boolean;
   selectedId: string;
-  recommendations: ReadonlyMap<string, number>;
 }
 interface Callbacks {
   selectStar: (star: GalaxyStar) => void;
@@ -48,7 +47,7 @@ export class GalaxyRenderer {
   private taxonomy: GalaxyTaxonomy = 'domain';
   private morph: GalaxyMorph | null = null;
   private departingClusters: readonly GalaxyCluster[] = [];
-  private appearance: Appearance = { paused: false, labels: true, domain: '', matchIds: new Set(), searching: false, selectedId: '', recommendations: new Map() };
+  private appearance: Appearance = { paused: false, labels: true, domain: '', matchIds: new Set(), searching: false, selectedId: '' };
   private home: OrbitCamera;
   private camera: OrbitCamera;
   private destination: OrbitCamera;
@@ -74,7 +73,6 @@ export class GalaxyRenderer {
   private screenRings: ScreenRing[] = [];
   private labelBoxes: LabelBox[] = [];
   private lastZoom = 100;
-  private framedGroup: readonly Point3[] | null = null;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -137,7 +135,6 @@ export class GalaxyRenderer {
     this.starsById = new Map(layout.stars.map(star => [star.id, star]));
     this.morph = this.appearance.paused ? null : flight;
     this.focusedStar = null;
-    this.framedGroup = null;
     this.hovered = null;
     this.hoveredDomain = null;
     this.labelBoxes = [];
@@ -172,7 +169,6 @@ export class GalaxyRenderer {
   }
 
   focus(point: Point3, zoom: number): void {
-    this.framedGroup = null;
     this.focusedStar = this.modelPoint(point);
     this.destination.target = this.currentPoint(point);
     this.destination.distance = clampDistance(this.home.distance / zoom, this.layout.extent);
@@ -180,17 +176,8 @@ export class GalaxyRenderer {
     this.invalidate();
   }
 
-  focusGroup(points: readonly Point3[]): void {
-    this.focusedStar = null;
-    this.framedGroup = points;
-    this.frameCurrentGroup();
-    this.hovered = null;
-    this.invalidate();
-  }
-
   reset(): void {
     this.focusedStar = null;
-    this.framedGroup = null;
     this.destination = cloneCamera(this.home);
     this.hovered = null;
     this.invalidate();
@@ -198,7 +185,6 @@ export class GalaxyRenderer {
 
   zoomBy(factor: number): void {
     this.focusedStar = null;
-    this.framedGroup = null;
     this.destination.distance = clampDistance(this.destination.distance / factor, this.layout.extent);
     this.hovered = null;
     this.invalidate();
@@ -238,10 +224,7 @@ export class GalaxyRenderer {
     if (this.canvas.width !== pixelWidth) this.canvas.width = pixelWidth;
     if (this.canvas.height !== pixelHeight) this.canvas.height = pixelHeight;
     this.home = this.overview();
-    if (this.framedGroup?.length) {
-      this.frameCurrentGroup();
-      this.camera = cloneCamera(this.destination);
-    } else if (first || wasHome) {
+    if (first || wasHome) {
       this.camera = cloneCamera(this.home);
       this.destination = cloneCamera(this.home);
     } else {
@@ -271,12 +254,6 @@ export class GalaxyRenderer {
   private currentPoint(point: Point3): Point3 {
     const star = this.modelPoint(point);
     return star ? this.visualPoint(star) : { x: point.x, y: point.y, z: point.z };
-  }
-
-  private frameCurrentGroup(): void {
-    if (!this.framedGroup?.length || !this.view.width || !this.view.height) return;
-    this.destination = fitCameraToPoints(this.framedGroup.map(point => this.currentPoint(point)), this.destination,
-      this.view.width, this.view.height, this.layout.extent);
   }
 
   private pan(dx: number, dy: number): void {
@@ -313,8 +290,7 @@ export class GalaxyRenderer {
       this.morph.advance(Math.min(elapsed, 80));
       if (this.morph.finished) this.morph = null;
     } else this.motion.advance(Math.min(elapsed, 80) / 1000, this.appearance.paused, this.hoveredDomain);
-    if (this.framedGroup?.length) this.frameCurrentGroup();
-    else if (this.focusedStar) this.destination.target = this.currentPoint(this.focusedStar);
+    if (this.focusedStar) this.destination.target = this.currentPoint(this.focusedStar);
     const moving = this.moveCamera(Math.min(elapsed, 80));
     if (this.dirty || moving || morphing || !this.appearance.paused) {
       this.draw(time);
@@ -390,13 +366,12 @@ export class GalaxyRenderer {
     for (const point of this.screenStars) {
       const { star, x, y, radius, depth, color } = point;
       const selected = star.id === appearance.selectedId;
-      const recommended = appearance.recommendations.has(star.id);
       const match = appearance.searching && appearance.matchIds.has(star.id);
       const active = !appearance.domain || this.groupOf(star) === appearance.domain;
-      const fade = recommended || selected || match ? 1 : appearance.recommendations.size && appearance.selectedId ? 0.14 : appearance.searching ? 0.12 : active ? 1 : 0.17;
+      const fade = selected || match ? 1 : appearance.searching ? 0.12 : active ? 1 : 0.17;
       const depthLight = clamp(this.home.distance / depth, 0.42, 1.35);
       const twinkle = appearance.paused ? 0.96 : 0.92 + Math.sin(time * 0.0006 + star.phase) * 0.05;
-      const radialOpacity = selected || match || recommended ? 1 : point.opacity;
+      const radialOpacity = selected || match ? 1 : point.opacity;
       ctx.globalAlpha = clamp(fade * depthLight * twinkle, 0.04, 1) * radialOpacity;
       if (this.morph && star.phase < 0.8) {
         const tail = this.project(this.morph.sample(star.id, this.morph.elapsed - 42));
@@ -415,7 +390,7 @@ export class GalaxyRenderer {
         ctx.arc(x, y, radius * 2.8, 0, TAU);
         ctx.fill();
       }
-      ctx.fillStyle = selected || match || recommended ? theme.highlight : color;
+      ctx.fillStyle = selected || match ? theme.highlight : color;
       ctx.beginPath();
       ctx.arc(x, y, selected ? radius + 1 : radius, 0, TAU);
       ctx.fill();
@@ -439,11 +414,6 @@ export class GalaxyRenderer {
     ctx.globalAlpha = 1;
     this.drawLabels(labelOpacity);
     if (this.morph) this.labelBoxes = [];
-    // Recommendation markers are an explicit foreground layer, matching picking below.
-    for (const point of this.screenStars) {
-      const rank = appearance.recommendations.get(point.star.id);
-      if (rank !== undefined) this.drawRecommendation(point, rank);
-    }
     this.drawOrientation();
     if (this.hoverPosition && this.pointers.size === 0) {
       this.hovered = this.pick(this.hoverPosition.x, this.hoverPosition.y);
@@ -600,26 +570,6 @@ export class GalaxyRenderer {
     return name;
   }
 
-  private drawRecommendation(point: ScreenStar, rank: number): void {
-    const ctx = this.context;
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = theme.background;
-    ctx.strokeStyle = theme.highlight;
-    ctx.lineWidth = point.star.id === this.appearance.selectedId ? 1.5 : 1;
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 7, 0, TAU);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = theme.highlight;
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 2.5, 0, TAU);
-    ctx.fill();
-    ctx.font = '10px "DM Sans", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(String(rank).padStart(2, '0'), point.x + 11, point.y - 7);
-  }
-
   private drawLabels(opacity = 1): void {
     this.labelBoxes = [];
     if (!this.appearance.labels || opacity <= 0) return;
@@ -736,20 +686,12 @@ export class GalaxyRenderer {
     ctx.fillText(title, x + 12, y + 10);
     ctx.fillStyle = theme.muted;
     ctx.font = '9px "Noto Sans SC", "Microsoft YaHei", sans-serif';
-    ctx.fillText(this.appearance.recommendations.has(point.star.id) ? '点击查看推荐理由与详情' : '点击查看详情 · ' + this.groupOf(point.star), x + 12, y + 29);
+    ctx.fillText('点击查看详情 · ' + this.groupOf(point.star), x + 12, y + 29);
   }
 
   private pick(x: number, y: number): ScreenStar | null {
     let best: ScreenStar | null = null;
     let nearest = Number.POSITIVE_INFINITY;
-    for (let index = this.screenStars.length - 1; index >= 0; index -= 1) {
-      const point = this.screenStars[index];
-      if (!point || !this.appearance.recommendations.has(point.star.id)) continue;
-      const distance = Math.hypot(point.x - x, point.y - y);
-      if (distance <= 7) return point;
-      if (distance <= 11 && distance < nearest) { best = point; nearest = distance; }
-    }
-    if (best) return best;
     // Foreground first resolves equal-distance overlaps in the rendered order.
     for (let index = this.screenStars.length - 1; index >= 0; index -= 1) {
       const point = this.screenStars[index];
@@ -823,7 +765,7 @@ export class GalaxyRenderer {
       return;
     }
     const dx = x - pointer.x, dy = y - pointer.y;
-    if (dx || dy) { this.framedGroup = null; this.focusedStar = null; }
+    if (dx || dy) { this.focusedStar = null; }
     if (Math.hypot(x - pointer.startX, y - pointer.startY) > 4) this.dragged = true;
     if (this.pointers.size > 1) {
       const other = [...this.pointers.entries()].find(([id]) => id !== event.pointerId)?.[1];
@@ -888,7 +830,6 @@ export class GalaxyRenderer {
 
   private wheel = (event: WheelEvent): void => {
     this.focusedStar = null;
-    this.framedGroup = null;
     event.preventDefault();
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.height : 1);
     const bounds = this.canvas.getBoundingClientRect();
@@ -907,7 +848,6 @@ export class GalaxyRenderer {
       this.zoomBy(event.key === '-' ? 1 / 1.25 : 1.25);
     } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
       this.focusedStar = null;
-      this.framedGroup = null;
       event.preventDefault();
       const dx = event.key === 'ArrowLeft' ? -30 : event.key === 'ArrowRight' ? 30 : 0;
       const dy = event.key === 'ArrowUp' ? -30 : event.key === 'ArrowDown' ? 30 : 0;

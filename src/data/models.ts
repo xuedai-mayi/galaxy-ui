@@ -1,16 +1,12 @@
 import { z } from 'zod';
 import type { GalaxyModel } from '../galaxy-layout';
 
-export const DOMAIN_NAMES = [
-  '生态/植被', '水文/洪水', '未标注', '气候/气象', '遥感/影像',
-  '地形/地貌', '农业', '土壤/侵蚀', '海洋/海岸', '社会经济',
-  '其他', '空气质量', '城市', '土地利用', '地下水',
-] as const;
+import { DOMAIN_NAMES } from '../galaxy-config';
 
 export const modelsSchema = z.array(z.object({
   id: z.string().trim().min(1),
   name: z.string().trim().min(1),
-  domain: z.enum(DOMAIN_NAMES),
+  domain: z.string().refine(value => DOMAIN_NAMES.has(value), '未知领域，请检查 galaxy-config.ts。'),
   task: z.string().trim().min(1),
   year: z.number().int().nullable(),
   interface_count: z.number().int().nonnegative(),

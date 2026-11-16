@@ -18,7 +18,6 @@
 .galaxy-frame[data-taxonomy='function'] .galaxy-taxonomy-thumb { transform: translateX(100%); }
 .taxonomy-spiral { font-size: var(--type-heading-small); line-height: 1; }
 .galaxy-view-caption, .galaxy-domain-strip { z-index: 3; }
-.galaxy-composer-dock { position: absolute; z-index: 6; top: 12px; left: 16px; width: min(410px, calc(100% - 280px)); }
 .galaxy-toolbar { position: absolute; top: 18px; right: 14px; z-index: 7; display: flex; align-items: center; gap: 14px; }
 .galaxy-toolbar-actions { display: flex; align-items: center; gap: 4px; }
 .galaxy-toolbar-actions button, .galaxy-search > button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; color: var(--muted); border-radius: 4px; }
@@ -50,19 +49,6 @@
 .galaxy-controls output { width: 42px; text-align: center; font-size: var(--type-label); color: var(--muted); font-variant-numeric: tabular-nums; }
 .galaxy-controls > span { width: 1px; height: 13px; margin: 0 3px; background: var(--line); }
 .galaxy-gesture { display: flex; gap: 6px; align-items: center; font-size: var(--type-label); color: var(--muted); pointer-events: none; }
-.galaxy-frame.has-recommendations .galaxy-gesture { display: none; }
-.galaxy-recommendation-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: var(--type-label); color: var(--muted); }
-.galaxy-recommendation-strip > span { color: var(--muted); }
-.galaxy-recommendation-strip button { display: inline-flex; gap: 5px; align-items: center; padding: 4px 0; color: var(--accent); font-size: var(--type-label); }
-.galaxy-recommendation-strip button:hover { color: var(--accent); }
-.galaxy-recommendation-list { display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; padding-bottom: 5px; }
-.galaxy-recommendation-list button { display: inline-flex; align-items: center; flex-shrink: 0; gap: 7px; max-width: 205px; min-height: 34px; padding: 5px 9px 5px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: var(--glass-light); backdrop-filter: blur(6px); font-size: var(--type-label); text-align: left; }
-.galaxy-recommendation-list button:hover { background: var(--hover); border-color: var(--line); }
-.galaxy-recommendation-list button[aria-pressed='true'] { background: var(--active); border-color: var(--accent); color: var(--accent); }
-.galaxy-recommendation-list .rank { display: inline-flex; justify-content: center; align-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--active); font-size: var(--type-label); color: var(--muted); flex-shrink: 0; }
-.galaxy-recommendation-list button[aria-pressed='true'] .rank { color: var(--bg); background: var(--accent); }
-.galaxy-recommendation-list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.galaxy-unmapped-note { font-size: var(--type-label); color: var(--muted); }
 .galaxy-domain-strip { position: absolute; bottom: 10px; left: 20px; right: 20px; display: flex; flex-wrap: nowrap; gap: 5px; overflow-x: auto; padding: 8px 0 6px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; border-top: 1px solid var(--line); }
 .galaxy-domain-strip button { display: flex; flex-shrink: 0; align-items: center; gap: 5px; padding: 6px 7px; font-size: var(--type-label); white-space: nowrap; border-radius: 3px; color: var(--muted); }
 .galaxy-domain-strip button small { font-size: var(--type-label); color: var(--faint); }
@@ -77,8 +63,6 @@
 .galaxy-expanded { position: fixed; inset: 0; z-index: 60; padding: 0; background: var(--bg); overflow: auto; }
 .galaxy-expanded .galaxy-heading { display: none; }
 .galaxy-expanded .galaxy-viewport { height: 100dvh; }
-.galaxy-in-recommend:not(.galaxy-expanded) { margin: 30px 0; }
-.galaxy-in-recommend:not(.galaxy-expanded) .galaxy-viewport { height: min(740px, 85dvh); }
 .galaxy-section button:focus-visible, .galaxy-section summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .galaxy-section .galaxy-search input:focus-visible { outline: 0; }
 .galaxy-search:focus-within { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -88,7 +72,6 @@
 }
 @container galaxy (max-width: 899px) {
   .galaxy-frame.has-detail .galaxy-detail-rail { max-height: none; }
-  .galaxy-composer-dock { width: min(410px, calc(100% - 230px)); left: 12px; }
   .galaxy-detail-rail { position: static; width: auto; max-height: none; padding: 10px 18px 24px; border-left: 0; border-top: 1px solid var(--line); background: transparent; backdrop-filter: none; overflow: visible; }
   .galaxy-detail-rail-heading { position: static; background: transparent; }
   .galaxy-frame.has-detail .galaxy-navigation { right: 20px; }
@@ -97,20 +80,15 @@
 @container galaxy (max-width: 599px) {
   .galaxy-taxonomy { top: 105px; right: 10px; }
   .galaxy-taxonomy button { min-width: 90px; padding: 0 9px; }
-  .galaxy-composer-dock { width: auto; top: 10px; left: 10px; right: 10px; }
   .galaxy-toolbar { top: 58px; right: 10px; gap: 10px; }
   .galaxy-local-search > summary span { display: none; }
   .galaxy-search { right: -106px; max-width: calc(100cqw - 16px); width: 340px; }
   .galaxy-search-results { max-height: 300px; }
   .galaxy-view-caption { display: none; }
-  .galaxy-composer-dock .recommendation-composer.is-compact .composer-meta { justify-content: flex-start; gap: 16px; padding-right: 140px; }
   .galaxy-view-caption small { font-size: var(--type-label); margin-left: 2px; }
   .galaxy-toolbar-actions { gap: 0; }
   .galaxy-navigation, .galaxy-frame.has-detail .galaxy-navigation { left: 8px; right: 8px; }
   .galaxy-navigation-row { gap: 7px 14px; }
-  .galaxy-recommendation-strip { gap: 9px; font-size: var(--type-label); }
-  .galaxy-recommendation-strip button { font-size: var(--type-label); }
-  .galaxy-recommendation-strip > span { display: none; }
   .galaxy-controls { gap: 0; padding: 2px; }
   .galaxy-controls output { width: 34px; }
   .galaxy-controls > button { width: 26px; height: 29px; }
