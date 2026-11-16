@@ -121,7 +121,6 @@ export default function Galaxy({ models, onSelectionChange }: GalaxyProps): Reac
         <div className="galaxy-viewport" ref={hostRef}>
           <AmbientBackground paused={paused} />
           <canvas className="galaxy-star-canvas" ref={canvasRef} tabIndex={0} aria-label="三维星图。拖动旋转，Shift加拖动或右键拖动平移，滚轮或双指缩放。方向键旋转，加减键缩放，Home恢复全景。可通过搜索和分类按钮选择模型。" />
-          <div className="galaxy-intro"><span>EXPLORE THE MODEL UNIVERSE</span><p>每一颗星，都是一条记录。</p><small>在星系与星环之间，探索数据的两种组织方式。</small></div>
           <div className="galaxy-taxonomy" role="group" aria-label="星图分类体系">
             <span className="galaxy-taxonomy-thumb" aria-hidden="true" />
             <button aria-pressed={taxonomy === 'domain'} onClick={() => switchTaxonomy('domain')}><span className="taxonomy-spiral" aria-hidden="true">✧</span>领域星系</button>
